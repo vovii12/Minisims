@@ -1,11 +1,11 @@
 import * as THREE from 'https://esm.sh/three@0.180.0';
 import { OrbitControls } from 'https://esm.sh/three@0.180.0/examples/jsm/controls/OrbitControls.js?deps=three@0.180.0';
 import { GLTFLoader } from 'https://esm.sh/three@0.180.0/examples/jsm/loaders/GLTFLoader.js?deps=three@0.180.0';
-import {TimeSystem,clockText} from './systems/time.js';
-import {CharacterSystem} from './systems/character.js';
-import {World} from './systems/world.js';
-import {cloneState} from './systems/state.js';
-import {save,load} from './systems/save.js';
+import {TimeSystem,clockText} from './time.js';
+import {CharacterSystem} from './character.js';
+import {World} from './world.js';
+import {cloneState} from './state.js';
+import {save,load} from './save.js';
 
 const S=load()||cloneState();
 const viewport=document.querySelector('#viewport'),hud=document.querySelector('#hud'),panels=document.querySelector('#panels'),toast=document.querySelector('#toast');
