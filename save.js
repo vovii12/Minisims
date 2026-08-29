@@ -1,0 +1,1 @@
+const KEY='minisims-save-v2';export const save=s=>localStorage.setItem(KEY,JSON.stringify(s));export const load=()=>{try{return JSON.parse(localStorage.getItem(KEY))}catch{return null}};export const reset=()=>localStorage.removeItem(KEY);
