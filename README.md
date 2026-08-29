@@ -1,24 +1,6 @@
-# MiniSims 3D — mobile/web build
+# Character assets
 
-## Важно
-Не открывайте `index.html` двойным нажатием из файлового менеджера Android. Браузеры ограничивают ES-модули при запуске через `file://`, из-за чего появляется белый экран.
+The game is wired for rigged GLB characters. For the starter build, the default URLs are the public Three.js demo models `Soldier.glb` and `Michelle.glb`. The loader can be switched to local files by changing `CHARACTER_URLS` in `game.js`.
 
-## Как открыть по ссылке с телефона
-Самый простой вариант — загрузить всю папку `MiniSims` на статический хостинг (например, GitHub Pages). После публикации откройте полученную HTTPS-ссылку в Chrome.
-
-Структура должна сохраняться:
-- index.html
-- game.js
-- styles.css
-- systems/
-- data/
-- assets/
-
-Эта версия использует Three.js через HTTPS CDN, поэтому после публикации на HTTPS отдельная установка Node.js не нужна.
-
-## Управление
-- Свайп по сцене — вращение камеры
-- Два пальца — масштаб
-- Кнопки снизу — действия персонажа
-- 🏠 — режим строительства
-- 💾 — сохранение
+Male: https://threejs.org/examples/models/gltf/Soldier.glb
+Female: https://threejs.org/examples/models/gltf/Michelle.glb
