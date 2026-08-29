@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="ru"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101522"><title>MiniSims</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden}body{font-family:system-ui,sans-serif;color:#fff;background:#101522}
+.bg{position:fixed;inset:0;background:linear-gradient(180deg,#6ea8d4,#334a60 46%,#101522)}
+.house{position:absolute;left:50%;top:39%;transform:translate(-50%,-50%) rotate(-2deg);width:min(84vw,560px);height:min(48vw,320px);background:#cdbb9f;border:2px solid #ffffff55;border-radius:18px;box-shadow:0 30px 80px #0008}
+.room{position:absolute;background:#9eb0bd;border:3px solid #eee}.a{left:4%;top:7%;width:44%;height:43%}.b{right:4%;top:7%;width:44%;height:43%}.c{left:4%;bottom:7%;width:44%;height:37%}.d{right:4%;bottom:7%;width:44%;height:37%}
+.sim{position:absolute;left:50%;top:49%;transform:translate(-50%,-50%);font-size:90px;filter:drop-shadow(0 15px 10px #0008)}
+.ui{position:absolute;z-index:2;left:0;right:0;bottom:0;text-align:center;padding:0 22px calc(24px + env(safe-area-inset-bottom))}
+.logo{font-size:clamp(48px,14vw,82px);font-weight:950;letter-spacing:-4px;text-shadow:0 7px 30px #0009}.tag{font-size:17px;margin:0 0 18px;opacity:.9}
+button{width:100%;border:0;border-radius:20px;padding:19px;margin:8px 0;font-size:23px;font-weight:900;background:#fff;color:#101522;box-shadow:0 12px 35px #0008}.secondary{background:#5fa9e8;color:#08111c;font-size:16px;padding:14px}small{display:block;margin-top:9px;opacity:.55}
+</style></head><body>
+<div class="bg"><div class="house"><div class="room a"></div><div class="room b"></div><div class="room c"></div><div class="room d"></div></div><div class="sim">🧍</div></div>
+<div class="ui"><div class="logo">MiniSims</div><div class="tag">Создай свою жизнь</div>
+<button onclick="location.href='game.html'">▶ ИГРАТЬ</button>
+<button class="secondary" onclick="location.href='game.html?continue=1'">ПРОДОЛЖИТЬ</button>
+<small>3D Life Simulator • Mobile</small></div></body></html>
