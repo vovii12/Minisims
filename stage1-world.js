@@ -1,12 +1,34 @@
 import * as THREE from 'https://esm.sh/three@0.180.0';
-const game=document.getElementById('game'),menu=document.getElementById('menu'),creator=document.getElementById('creator'),view=document.getElementById('viewport');
-let scene,camera,renderer,worldRoot,drag=false,lastX=0,lastY=0,az=.72,dist=42,elev=.78;
-function mat(c){return new THREE.MeshStandardMaterial({color:c,roughness:.82})} function add(g,c,p=[0,0,0],r=[0,0,0]){const m=new THREE.Mesh(g,mat(c));m.position.set(...p);m.rotation.set(...r);m.castShadow=true;m.receiveShadow=true;worldRoot.add(m);return m} function box(c,x,y,z,w,h,d){return add(new THREE.BoxGeometry(w,h,d),c,[x,y,z])} function cyl(c,x,y,z,r,h,s=12){return add(new THREE.CylinderGeometry(r,r*.92,h,s),c,[x,y,z])} function roof(c,x,y,z,w,d,h=.9){return add(new THREE.ConeGeometry(Math.sqrt(2)*Math.max(w,d)/2,h,4),c,[x,y,z],[0,Math.PI/4,0])}
-function tree(x,z,s=1){cyl(0x6a4a32,x,.65*s,z,.16*s,1.3*s,9);for(let i=0;i<3;i++)add(new THREE.IcosahedronGeometry(.85*s,1),0x4d8150,[x+(i-1)*.3*s,1.65*s+i*.28*s,z+(i%2)*.22*s])}
-function street(x,z,w,d){box(0x4e5358,x,.035,z,w,.07,d);box(0xc9c1b4,x,.08,z-d/2-.55,w,.1,.9);box(0xc9c1b4,x,.08,z+d/2+.55,w,.1,.9)}
-function house(x,z,w=5,d=4,c=0xe9d9bd,r=0x46515b){box(c,x,1.35,z,w,2.7,d);roof(r,x,3.55,z,w*1.08,d*1.08);box(0x5b4638,x,.75,z+d/2+.03,.7,1.5,.12)}
-function buildWorld(){box(0x6f9a61,0,-.12,0,90,.25,90);street(0,17,76,6);street(0,5,76,5);street(-20,1,5,50);street(20,1,5,50);street(0,-10,76,5);box(0x7ea86a,-1,.01,7,15,.06,10);cyl(0x8d9697,-1,.2,7,1.8,.25,32);cyl(0x6da9bd,-1,.48,7,.98,.08,32);box(0x6da9bd,0,-.02,-34,90,.05,20);box(0xd5bd91,0,.03,-24,90,.08,3);house(-32,-8,6,5,0xe4c79e,0x59636c);house(-24,-8,5,4,0xe8ddd0,0x7b5147);house(-16,-8,6,5,0xd8b08a);house(28,-8,6,5,0xe0d1ae);house(35,-2,5,4,0xd9c2a5);house(28,7,6,5,0xb9d0c7);house(-32,7,6,5,0xd7b99e);house(-25,13,5,4,0xc4d7dd);house(30,13,7,5,0xe2cda8);for(let i=0;i<55;i++){let x=-40+Math.random()*80,z=-30+Math.random()*55;if(Math.abs(x)<12&&z>-2&&z<14)continue;tree(x,z,.65+Math.random()*.45)}}
-function fit(){renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix()} function cam(){camera.position.set(Math.cos(az)*dist,dist*elev,Math.sin(az)*dist);camera.lookAt(0,0,0)}
-function init(){scene=new THREE.Scene();scene.background=new THREE.Color(0xb9d5e5);scene.fog=new THREE.Fog(0xb9d5e5,55,115);camera=new THREE.PerspectiveCamera(45,innerWidth/innerHeight,.1,180);renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;view.replaceChildren(renderer.domElement);scene.add(new THREE.HemisphereLight(0xeaf7ff,0x4d654a,2.3));const sun=new THREE.DirectionalLight(0xffedcf,3.1);sun.position.set(-25,35,18);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);scene.add(sun);worldRoot=new THREE.Group();scene.add(worldRoot);buildWorld();cam();fit();renderer.domElement.addEventListener('pointerdown',e=>{drag=true;lastX=e.clientX;lastY=e.clientY;renderer.domElement.setPointerCapture(e.pointerId)});renderer.domElement.addEventListener('pointermove',e=>{if(!drag)return;az-=(e.clientX-lastX)*.006;elev=Math.max(.45,Math.min(1.15,elev+(e.clientY-lastY)*.003));lastX=e.clientX;lastY=e.clientY;cam()});renderer.domElement.addEventListener('pointerup',()=>drag=false);renderer.domElement.addEventListener('wheel',e=>{dist=Math.max(18,Math.min(70,dist+e.deltaY*.035));cam()},{passive:true});addEventListener('resize',fit);requestAnimationFrame(loop)} function loop(){requestAnimationFrame(loop);if(renderer)renderer.render(scene,camera)}
-function start(){menu.classList.add('hidden');creator.classList.add('hidden');game.classList.remove('hidden');if(!renderer)init()}
-document.getElementById('playBtn')?.addEventListener('click',start);document.getElementById('continueBtn')?.addEventListener('click',start);document.getElementById('newBtn')?.addEventListener('click',()=>{menu.classList.add('hidden');creator.classList.remove('hidden')});document.getElementById('backBtn')?.addEventListener('click',()=>{creator.classList.add('hidden');menu.classList.remove('hidden')});document.getElementById('startBtn')?.addEventListener('click',start);
+
+const game=document.getElementById('game');
+const view=document.getElementById('viewport');
+let renderer,scene,camera,root;
+
+function showError(error){
+  console.error('MiniSims stage1:',error);
+  const text=error instanceof Error ? error.message : String(error);
+  view.innerHTML='<div style="position:absolute;inset:0;display:grid;place-items:center;background:#182028;color:white;padding:24px;text-align:center;font:600 18px system-ui">Ошибка 3D-модуля<br><small style="font-weight:400">'+text.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))+'</small></div>';
+}
+
+function material(color){return new THREE.MeshStandardMaterial({color,roughness:.8});}
+function cube(color,x,y,z,w,h,d){const mesh=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),material(color));mesh.position.set(x,y,z);mesh.castShadow=true;mesh.receiveShadow=true;root.add(mesh);return mesh;}
+function tree(x,z,s){cube(0x6b4b35,x,.65*s,z,.22*s,1.3*s,.22*s);const crown=new THREE.Mesh(new THREE.SphereGeometry(.9*s,12,8),material(0x568458));crown.position.set(x,1.65*s,z);crown.castShadow=true;root.add(crown);}
+function house(x,z,color){cube(color,x,1.4,z,5,2.8,4);const roof=new THREE.Mesh(new THREE.ConeGeometry(3.8,.9,4),material(0x4b535c));roof.position.set(x,3.25,z);roof.rotation.y=Math.PI/4;roof.castShadow=true;root.add(roof);cube(0x5a463b,x,.8,z+2.03,.75,1.6,.12);cube(0xece8df,x-1.45,1.55,z-2.03,.8,.85,.1);cube(0xece8df,x+1.45,1.55,z-2.03,.8,.85,.1);}
+function build(){
+ cube(0x739d66,0,-.15,0,86,.3,86);
+ cube(0x4d5257,0,.02,5,78,.08,6);cube(0x4d5257,-20,.02,0,6, .08,48);cube(0x4d5257,20,.02,0,6,.08,48);cube(0xc8c0b4,0,.08,1.45,78,.12,.8);cube(0xc8c0b4,0,.08,8.55,78,.12,.8);
+ cube(0x7ea96c,-2,.03,15,18,.08,13);cube(0x91a9b4,-2,.08,15,3,.12,3);
+ house(-31,-8,0xe2c59f);house(-23,-8,0xd9e0db);house(-15,-8,0xd7b08c);house(29,-8,0xe0d0ad);house(29,2,0xbdd3c8);house(-31,7,0xd9b89d);house(-23,15,0xc8d8df);house(28,14,0xe1caa6);
+ for(let i=0;i<45;i++){const x=-39+Math.random()*78;const z=-25+Math.random()*48;if(Math.abs(x)<12&&z>0&&z<24)continue;tree(x,z,.65+Math.random()*.4);}
+ cube(0x6da9bd,0,.02,-32,86,.08,13);cube(0xd7bf92,0,.08,-25,86,.12,2.5);
+}
+function resize(){renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();}
+function init(){
+ scene=new THREE.Scene();scene.background=new THREE.Color(0xb9d5e5);scene.fog=new THREE.Fog(0xb9d5e5,48,105);
+ camera=new THREE.PerspectiveCamera(45,innerWidth/innerHeight,.1,160);camera.position.set(28,25,30);camera.lookAt(0,0,0);
+ renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;view.replaceChildren(renderer.domElement);
+ scene.add(new THREE.HemisphereLight(0xeaf7ff,0x4e674e,2.2));const sun=new THREE.DirectionalLight(0xffefd8,3);sun.position.set(-20,30,15);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);scene.add(sun);
+ root=new THREE.Group();scene.add(root);build();resize();window.addEventListener('resize',resize);requestAnimationFrame(loop);
+}
+function loop(){requestAnimationFrame(loop);if(renderer)renderer.render(scene,camera);}
+try{init();}catch(error){showError(error);}
