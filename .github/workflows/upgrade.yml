@@ -1,0 +1,40 @@
+name: MiniSims visual upgrade
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  upgrade:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Upgrade runtime
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('deluxe.js'); s=p.read_text()
+          s=s.replace("https://threejs.org/examples/models/gltf/Soldier.glb","https://threejs.org/examples/models/gltf/RobotExpressive/RobotExpressive.glb")
+          s=s.replace("model.scale.setScalar(1.35)","model.scale.setScalar(0.95)")
+          s=s.replace("acts[a.name]=mixer.clipAction(a)","acts[a.name]=mixer.clipAction(a)")
+          s=s.replace("function playAnim(name){if(!mixer)return;let a=acts[name]||acts['Walk']||acts['Idle'];if(!a)return;Object.values(acts).forEach(x=>x.fadeOut(.15));a.reset().fadeIn(.15).play()}","function playAnim(name){if(!mixer)return;const map={Idle:'Idle',Walk:'Walking',Run:'Running',Sit:'Sitting',Stand:'Standing',Talk:'Yes',Wave:'Wave',Work:'Standing',Cook:'Punch'};let a=acts[map[name]||name]||acts.Idle;if(!a)return;Object.values(acts).forEach(x=>{if(x!==a)x.fadeOut(.12)});a.reset().fadeIn(.12).play()}")
+          s=s.replace("if(o.type==='sleep'){busy=true;S.action='Спит';playAnim('Idle');", "if(o.type==='sleep'){busy=true;S.action='Спит';playAnim('Sit');")
+          s=s.replace("if(o.type==='shower'){busy=true;S.action='Принимает душ';", "if(o.type==='shower'){busy=true;S.action='Принимает душ';playAnim('Wave');")
+          s=s.replace("if(o.type==='tv'){busy=true;S.action='Смотрит ТВ';", "if(o.type==='tv'){busy=true;S.action='Смотрит ТВ';playAnim('Sit');")
+          s=s.replace("if(o.type==='social'){busy=true;S.action='Общается';", "if(o.type==='social'){busy=true;S.action='Общается';playAnim('Talk');")
+          s=s.replace("startMini(o.type,o.name)","playAnim(o.type==='cook'?'Cook':'Work');startMini(o.type,o.name)")
+          s=s.replace("if(mixer)mixer.update(dt)}", "if(busy&&!mini&&hero){const t=performance.now()*.004;if(hero.children[0]){hero.children[0].rotation.z=Math.sin(t)*.035;hero.children[0].position.y=0.02+Math.abs(Math.sin(t))*0.015}}else if(hero&&hero.children[0]){hero.children[0].rotation.z=0;hero.children[0].position.y=0}if(mixer)mixer.update(dt)}")
+          p.write_text(s)
+          css=Path('styles.css').read_text()
+          css += '''\n/* MiniSims Deluxe presentation */\n.menu-card{backdrop-filter:blur(18px);animation:cardIn .55s ease both}.logo{font-family:system-ui,sans-serif}.menu-btn{box-shadow:0 8px 24px #0002}.menu-btn.primary{font-size:17px}.profile{backdrop-filter:blur(16px)}.needs-card{backdrop-filter:blur(16px)}.context{transition:transform .15s,background .15s}.context:active{transform:scale(.96)}.mini-card{backdrop-filter:blur(18px)}.work-keys{display:flex;gap:14px;justify-content:center;margin:22px 0}.work-keys button{width:72px;height:72px;border-radius:18px;background:#ffffff12;border:1px solid #fff2;font-size:25px;font-weight:900}.work-keys button:active{transform:scale(.92);background:#ffffff24}@keyframes cardIn{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:none}}@media(max-width:700px){.needs-card{max-width:210px}.profile{flex:1}.context-actions{max-width:calc(100vw - 120px)}}\n'''
+          Path('styles.css').write_text(css)
+          PY
+      - name: Commit upgrade
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add deluxe.js styles.css
+          git diff --cached --quiet || git commit -m "Upgrade character animations and presentation [skip ci]"
+          git push
